@@ -74,7 +74,7 @@ module HTTMultiParty
      def post(path, options={})
        method = Net::HTTP::Post
        options[:body] ||= options.delete(:query)
-       if hash_contains_files?(options[:body])
+       if options[:multipart] == :force || hash_contains_files?(options[:body])
          method = MultipartPost
          options[:query_string_normalizer] = HTTMultiParty::QUERY_STRING_NORMALIZER
        end
@@ -84,7 +84,7 @@ module HTTMultiParty
      def put(path, options={})
        method = Net::HTTP::Put
        options[:body] ||= options.delete(:query)
-       if hash_contains_files?(options[:body])
+       if options[:multipart] == :force || hash_contains_files?(options[:body])
          method = MultipartPut
          options[:query_string_normalizer] = HTTMultiParty::QUERY_STRING_NORMALIZER
        end
@@ -93,7 +93,7 @@ module HTTMultiParty
 
     private
       def hash_contains_files?(hash)
-        hash.is_a?(Hash) && HTTMultiParty.flatten_params(hash).select do |(k,v)| 
+        hash.is_a?(Hash) && HTTMultiParty.flatten_params(hash).select do |(k,v)|
           TRANSFORMABLE_TYPES.include?(v.class) || v.is_a?(UploadIO)
         end.size > 0
       end
